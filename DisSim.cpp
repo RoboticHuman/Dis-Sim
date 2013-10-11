@@ -12,8 +12,7 @@ void DisSim::emitError(char *s)
 
 char* DisSim::decodeInst(unsigned int instWord)
 {
-	unsigned int rd, rs, rt, func, shamt, imm, opcode;
-	unsigned int adress;
+    unsigned int opcode;
 	opcode = instWord >> 26;
 	if(0 == (opcode))
 	{
