@@ -23,7 +23,7 @@ private:
 	ofstream outFile;							// The Assembly code output file stream
 	map< int , char * > regNames;				// Mapping the register numbers with their names
 	unsigned int current_Instr_Address;			// initial address = 0x00400000 and is incremented by 4 each time
-
+	unsigned int memory_Address;
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
 	char * decodeInst( unsigned int );	// Takes the binary line from the constructor, extracts the opcode and
