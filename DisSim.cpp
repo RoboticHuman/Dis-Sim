@@ -1,5 +1,7 @@
 #include "DisSim.h"
 #include "stdlib.h"
+#include <string>
+#include <sstream>
 
 
 void DisSim::emitError(char *s)
@@ -13,7 +15,30 @@ char* DisSim::decodeInst(unsigned int instWord)
 	unsigned int rd, rs, rt, func, shamt, imm, opcode;
 	unsigned int adress;
 	opcode = instWord >> 26;
-
+	if(0 == (opcode))
+	{
+		current_Instr_Address += 4;
+		return( decodeR(instWord) );
+	}
+	else if(0!= opcode && 2!=opcode && 3!=opcode && 16!=opcode && 17!=opcode && 18!=opcode && 19!=opcode)
+	{
+		current_Instr_Address += 4;
+		return ( decodeI(instWord) );
+	}
+	else if(opcode==2 || opcode==3)
+	{
+		current_Instr_Address += 4;
+		return ( decodeJ(instWord) );
+	}
+	else
+	{
+		std::ostringstream strstream;
+		strstream << "Opcode: " << opcode << "is referring to an unknown instruction\n";
+		std:: string str = strstream.str();
+		char * error = (char *)alloca(str.size() + 1);
+		memcpy(error, str.c_str(), str.size() + 1);
+		return error;
+	}
 }
 
 DisSim::DisSim(char * in , char * out)
