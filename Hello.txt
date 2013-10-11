@@ -1,3 +1,9 @@
 just checking sth
+<<<<<<< HEAD
+Alright dude
+
+This is a stupid change but oh well <----------------------
+=======
 Is sync working?! :O
 yes!
+>>>>>>> master
