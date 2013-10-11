@@ -1,6 +1,20 @@
 #include "DisSim.h"
+#include "stdlib.h"
 
-using namespace std;
+
+void DisSim::emitError(char *s)
+{
+	cout<< s;
+	exit(0);
+}
+
+char* DisSim::decodeInst(unsigned int instWord)
+{
+	unsigned int rd, rs, rt, func, shamt, imm, opcode;
+	unsigned int adress;
+	opcode = instWord >> 26;
+
+}
 
 DisSim::DisSim(char * in , char * out)
 {
@@ -20,7 +34,7 @@ DisSim::DisSim(char * in , char * out)
 	{
 		unsigned int instWord=0;
 		while(inFile.read ((char *)&instWord, 4))
-			outFile<<decodeInst(instWord);
+			outFile<<decodeInst(instWord)<<endl;
 	}
 
 	// mapping the register numbers to names
