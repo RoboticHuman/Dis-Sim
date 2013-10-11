@@ -1,5 +1,5 @@
 #include"score.h"
-
+#include<string>
 using namespace std;
 
 void main()
