@@ -24,6 +24,8 @@ private:
 	map< int , char * > regNames;				// Mapping the register numbers with their names
 	unsigned int current_Instr_Address;			// initial address = 0x00400000 and is incremented by 4 each time
 	unsigned int memory_Address;
+	map< int , unsigned int > Instr_Addresses;
+	bool exitFlag;
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
 	char * decodeInst( unsigned int );	// Takes the binary line from the constructor, extracts the opcode and
@@ -33,6 +35,10 @@ private:
 	char * decodeR( unsigned int );		
 	char * decodeI( unsigned int );
 	char * decodeJ( unsigned int );
+	void ExecuteInst( unsigned int );
+	void ExecuteR( unsigned int );
+	void ExecuteI( unsigned int );
+	void ExecuteJ( unsigned int );
 
 public:
 	DisSim( char * , char * );			// The constructor recieves the input and output file paths
