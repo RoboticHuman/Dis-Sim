@@ -50,8 +50,7 @@ void DisSim::emitError(char *s)
 }
 char* DisSim::decodeInst( unsigned int instWord)
 {
-	unsigned int rd, rs, rt, func, shamt, imm, opcode;
-	unsigned int adress;
+	unsigned int opcode;
 	opcode = instWord >> 26;
 	if(0 == (opcode))
 	{
@@ -95,10 +94,9 @@ void DisSim::ExecuteInst( unsigned int instWord)
 
 char* DisSim::decodeR( unsigned int instWord)
 {
-	unsigned int rd, rs, rt, func, shamt, imm;
+	unsigned int rd, rs, rt, func, shamt;
 	std::ostringstream strstream;
 	std::string str;
-	unsigned int adress;
 	func = instWord & 0x3F;
 	shamt = (instWord>>6) & 0x1f;
 	rd    = (instWord>>11) & 0x1f;
@@ -332,10 +330,9 @@ char* DisSim::decodeJ( unsigned int instWord)
 
 void DisSim::ExecuteR( unsigned int instWord)
 {
-	unsigned int rd, rs, rt, func, shamt, imm;
+	unsigned int rd, rs, rt, func, shamt;
 	std::ostringstream strstream;
 	std::string str;
-	unsigned int adress;
 	func = instWord & 0x3F;
 	shamt = (instWord>>6) & 0x1f;
 	rd    = (instWord>>11) & 0x1f;
@@ -350,7 +347,7 @@ void DisSim::ExecuteR( unsigned int instWord)
 		break;
 	case 0x21:
 		{	//addu
-			regs[rd] = ( (unsigned int)regs[rs] + (unsigned int)regs[rt];
+			regs[rd] = ( (unsigned int)regs[rs] + (unsigned int)regs[rt]);
 		}
 		break;
 	case 0x22:
@@ -552,5 +549,6 @@ void DisSim::ExecuteJ( unsigned int instWord)
 
 DisSim::~DisSim()
 {
-
+	inFile.close();
+	outFile.close();
 }
