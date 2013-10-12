@@ -29,12 +29,13 @@ DisSim::DisSim(char * in , char * out)
 			outFile<<decodeInst(instWord)<<endl;
 			current_Instr_Address += 4;
 		}
-		current_Instr_Address = 0x00400004;		// reseting the instruction address to start execution + 4
-		while(!exitFlag)
+		current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
+		
+		do
 		{
 			ExecuteInst(Instr_Addresses.at(current_Instr_Address));
 			current_Instr_Address += 4;
-		}
+		}while(!exitFlag);
 	}
 
 	// mapping the register numbers to names
@@ -47,8 +48,7 @@ void DisSim::emitError(char *s)
 	cout<< s;
 	exit(0);
 }
-
-char* DisSim::decodeInst(unsigned int instWord)
+char* DisSim::decodeInst( unsigned int instWord)
 {
 	unsigned int rd, rs, rt, func, shamt, imm, opcode;
 	unsigned int adress;
@@ -74,6 +74,10 @@ char* DisSim::decodeInst(unsigned int instWord)
 		memcpy(error, str.c_str(), str.size() + 1);
 		return error;
 	}
+}
+void DisSim::ExecuteInst( unsigned int instWord)
+{
+
 }
 
 char* DisSim::decodeR( unsigned int instWord)
@@ -191,17 +195,18 @@ char* DisSim::decodeI( unsigned int instWord)
 	imm	  	= (instWord    )& 0xffff;
 
 	stringstream strs;
+	int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
 
 	switch(opcode)
 	{
 	case 4: {
 				// beq
-				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
+				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
 				break;
 			}
 	case 5: {
 				// bne
-				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
+				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
 				break;
 			}
 	case 8:	{
@@ -231,52 +236,51 @@ char* DisSim::decodeI( unsigned int instWord)
 			}
 	case 13:{
 				// ori
-		strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
+				strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 14:{
 				// xori
-		strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
+				strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 15:{
 				// lui
+				strs<< "0x" << hex << current_Instr_Address << "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 32:{
 				// lb
+				strs<< "0x" << hex << current_Instr_Address << "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 33:{
 				// lh
+				strs<< "0x" << hex << current_Instr_Address << "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 35:{
 				// lw
-				break;
-			}
-	case 36:{
-				// lbu
-				break;
-			}
-	case 37:{
-				// lhu
+				strs<< "0x" << hex << current_Instr_Address << "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 40:{
 				// sb
+				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 41:{
 				// sh
+				strs<< "0x" << hex << current_Instr_Address << "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 43:{
 				// sw
+				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
 				break;
 			}
 	default:{
-				// Unkown I-Format Instruction
+				strs<< "#Unknown I-Format Instruction";
 			}
 	}
 
@@ -286,10 +290,39 @@ char* DisSim::decodeI( unsigned int instWord)
 	char* char_type = (char*) temp_str.c_str();
 	return ( char_type );
 }
+char* DisSim::decodeJ( unsigned int instWord)
+{
+	 unsigned int opcode, address;
+	 opcode	 = (instWord>>26);
+	 address = (instWord & 0x03ffffff);
 
+	 stringstream strs;
+
+	 switch( opcode)
+	 {
+	 case 2:{
+				// j
+				strs<< "0x" << hex << current_Instr_Address << "\tj\t0x" << hex << address;
+				break;
+			}
+	 case 3:{
+				// jal
+				strs<< "0x" << hex << current_Instr_Address << "\tjal\t0x" << hex << address;
+				break;
+			}
+	 }
+
+	string temp_str = strs.str();
+	char* char_type = (char*) temp_str.c_str();
+	return ( char_type );
+}
+
+void DisSim::ExecuteR( unsigned int instWord)
+{
+
+}
 void DisSim::ExecuteI( unsigned int instWord)
 {
-	
 	unsigned int opcode, rs, rt, imm;
 
 	opcode	= (instWord>>26);
@@ -399,6 +432,27 @@ void DisSim::ExecuteI( unsigned int instWord)
 			}
 	default:{
 				// Unkown I-Format Instruction
+			}
+	}
+}
+void DisSim::ExecuteJ( unsigned int instWord)
+{
+	unsigned int opcode, address;
+	opcode	 = (instWord>>26);
+	address = (instWord & 0x03ffffff);
+
+	switch( opcode )
+	{
+	case 2:{
+				// j
+				current_Instr_Address = address - 4;
+				break;
+			}
+	case 3:{
+				// jal
+				regs[31] = current_Instr_Address + 4;
+				current_Instr_Address = address - 4;
+				break;
 			}
 	}
 }
