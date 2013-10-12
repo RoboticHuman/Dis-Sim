@@ -3,7 +3,6 @@
 #include <string>
 #include <sstream>
 
-
 void DisSim::emitError(char *s)
 {
 	cout<< s;
