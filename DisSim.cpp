@@ -13,6 +13,11 @@ DisSim::DisSim(char * in , char * out)
 	memory_Address = 0x10010000;
 	exitFlag=false;
 
+	// mapping the register numbers to names
+	char* tempr[32] = { "zero","at","v0","v1","a0","a1","a2","a3","t0","t1","t2","t3","t4","t5","t6","t7","s0","s1","s2","s3","s4","s5","s6","s7","t8","t9","k0","k1","gp","sp","s8","ra"};
+	for( int i=0 ; i<32 ; i++ )
+		regNames.insert(pair<int,char *>(i,tempr[i]));
+
 	inFile.open(in);
 	outFile.open(out);
 
@@ -29,28 +34,24 @@ DisSim::DisSim(char * in , char * out)
 			outFile<<decodeInst(instWord)<<endl;
 			current_Instr_Address += 4;
 		}
-		current_Instr_Address = 0x00400004;		// reseting the instruction address to start execution + 4
-		while(!exitFlag)
+		current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
+		
+		do
 		{
 			ExecuteInst(Instr_Addresses.at(current_Instr_Address));
 			current_Instr_Address += 4;
-		}
+		}while(!exitFlag);
 	}
-
-	// mapping the register numbers to names
-	char* tempr[32] = { "zero","at","v0","v1","a0","a1","a2","a3","t0","t1","t2","t3","t4","t5","t6","t7","s0","s1","s2","s3","s4","s5","s6","s7","t8","t9","k0","k1","gp","sp","s8","ra"};
-	for( int i=0 ; i<32 ; i++ )
-		regNames.insert(pair<int,char *>(i,tempr[i]));
 }
 void DisSim::emitError(char *s)
 {
 	cout<< s;
 	exit(0);
 }
-
-char* DisSim::decodeInst(unsigned int instWord)
+char* DisSim::decodeInst( unsigned int instWord)
 {
-	unsigned int opcode;
+	unsigned int rd, rs, rt, func, shamt, imm, opcode;
+	unsigned int adress;
 	opcode = instWord >> 26;
 	if(0 == (opcode))
 	{
@@ -74,122 +75,6 @@ char* DisSim::decodeInst(unsigned int instWord)
 		return error;
 	}
 }
-
-char* DisSim::decodeR( unsigned int instWord)
-{
-	unsigned int rd, rs, rt, func, shamt, imm;
-	std::ostringstream strstream;
-	std::string str;
-	unsigned int adress;
-	func = instWord & 0x3F;
-	shamt = (instWord>>6) & 0x1f;
-	rd    = (instWord>>11) & 0x1f;
-	rt    = (instWord>>16) & 0x1f;
-	rs    = (instWord>>21) & 0x1f;
-	switch(func)
-	{
-	case 0x20: // needs exception handling
-		{
-		strstream << "0x" << hex << current_Instr_Address << "add\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x21:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "addu\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x22:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "sub\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x24:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "and\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x25:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "or\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x26:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "xor\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x2A:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "slt\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x2:
-		{
-        strstream << "0x" << hex << current_Instr_Address << "srl\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-	memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0x0:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "sll\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	case 0xC:
-		{
-			return "SYSCALL";
-		}
-		break;
-	case 0x8:
-		{
-		strstream << "0x" << hex << current_Instr_Address << "jr\t$" << regNames.find(rs)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
-		}
-		break;
-	default:
-		{
-			return "Unkown R-Format Instruction";
-		}
-	}
-}
-
 void DisSim::ExecuteInst( unsigned int instWord)
 {
 	unsigned int opcode;
@@ -206,6 +91,243 @@ void DisSim::ExecuteInst( unsigned int instWord)
 	{
 		ExecuteJ(instWord);
 	}
+}
+
+char* DisSim::decodeR( unsigned int instWord)
+{
+	unsigned int rd, rs, rt, func, shamt, imm;
+	std::ostringstream strstream;
+	std::string str;
+	unsigned int adress;
+	func = instWord & 0x3F;
+	shamt = (instWord>>6) & 0x1f;
+	rd    = (instWord>>11) & 0x1f;
+	rt    = (instWord>>16) & 0x1f;
+	rs    = (instWord>>21) & 0x1f;
+	switch(func)
+	{
+	case 0x20: // needs exception handling
+		{
+		strstream << "add\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x21:
+		{
+		strstream << "addu\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x22:
+		{
+		strstream << "sub\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x24:
+		{
+		strstream << "and\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x25:
+		{
+		strstream << "or\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x26:
+		{
+		strstream << "xor\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x2A:
+		{
+		strstream << "slt\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x2:
+		{
+        strstream << "srl\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+	memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x0:
+		{
+		strstream << "sll\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0xC:
+		{
+			return "SYSCALL";
+		}
+		break;
+	default:
+		{
+			return "Unkown R-Format Instruction";
+		}
+	}
+}
+char* DisSim::decodeI( unsigned int instWord)
+{
+	unsigned int opcode, rs, rt, imm;
+
+	opcode	= (instWord>>26);
+	rt    	= (instWord>>16)& 0x1f;
+	rs    	= (instWord>>21)& 0x1f;
+	imm	  	= (instWord    )& 0xffff;
+
+	stringstream strs;
+	int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
+
+	switch(opcode)
+	{
+	case 4: {
+				// beq
+				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
+				break;
+			}
+	case 5: {
+				// bne
+				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
+				break;
+			}
+	case 8:	{
+				// addi
+				strs<< "0x" << hex << current_Instr_Address << "\taddi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
+				break;
+			}
+	case 9:	{
+				// addiu
+				strs<< "0x" << hex << current_Instr_Address << "\taddiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
+				break;
+			}
+	case 10:{
+				// slti
+				strs<< "0x" << hex << current_Instr_Address << "\tslti\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
+				break;
+			}
+	case 11:{
+				// sltiu
+				strs<< "0x" << hex << current_Instr_Address << "\tsltiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
+				break;
+			}
+	case 12:{
+				// andi
+				strs<< "0x" << hex << current_Instr_Address << "\tandi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
+				break;
+			}
+	case 13:{
+				// ori
+				strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
+				break;
+			}
+	case 14:{
+				// xori
+				strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
+				break;
+			}
+	case 15:{
+				// lui
+				strs<< "0x" << hex << current_Instr_Address << "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+				break;
+			}
+	case 32:{
+				// lb
+				strs<< "0x" << hex << current_Instr_Address << "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	case 33:{
+				// lh
+				strs<< "0x" << hex << current_Instr_Address << "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	case 35:{
+				// lw
+				strs<< "0x" << hex << current_Instr_Address << "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	case 40:{
+				// sb
+				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	case 41:{
+				// sh
+				strs<< "0x" << hex << current_Instr_Address << "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	case 43:{
+				// sw
+				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				break;
+			}
+	default:{
+				strs<< "#Unknown I-Format Instruction";
+			}
+	}
+
+
+	
+	string temp_str = strs.str();
+	char* char_type = (char*) temp_str.c_str();
+	return ( char_type );
+}
+char* DisSim::decodeJ( unsigned int instWord)
+{
+	 unsigned int opcode, address;
+	 opcode	 = (instWord>>26);
+	 address = (instWord & 0x03ffffff);
+
+	 stringstream strs;
+
+	 switch( opcode)
+	 {
+	 case 2:{
+				// j
+				strs<< "0x" << hex << current_Instr_Address << "\tj\t0x" << hex << address;
+				break;
+			}
+	 case 3:{
+				// jal
+				strs<< "0x" << hex << current_Instr_Address << "\tjal\t0x" << hex << address;
+				break;
+			}
+	 }
+
+	string temp_str = strs.str();
+	char* char_type = (char*) temp_str.c_str();
+	return ( char_type );
 }
 
 void DisSim::ExecuteR( unsigned int instWord)
@@ -292,116 +414,8 @@ void DisSim::ExecuteR( unsigned int instWord)
 		}
 	}
 }
-
-char* DisSim::decodeI( unsigned int instWord)
-{
-	unsigned int opcode, rs, rt, imm;
-
-	opcode	= (instWord>>26);
-	rt    	= (instWord>>16)& 0x1f;
-	rs    	= (instWord>>21)& 0x1f;
-	imm	  	= (instWord    )& 0xffff;
-
-	stringstream strs;
-
-	switch(opcode)
-	{
-	case 4: {
-				// beq
-				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
-				break;
-			}
-	case 5: {
-				// bne
-				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
-				break;
-			}
-	case 8:	{
-				// addi
-				strs<< "0x" << hex << current_Instr_Address << "\taddi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
-				break;
-			}
-	case 9:	{
-				// addiu
-				strs<< "0x" << hex << current_Instr_Address << "\taddiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
-				break;
-			}
-	case 10:{
-				// slti
-				strs<< "0x" << hex << current_Instr_Address << "\tslti\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
-				break;
-			}
-	case 11:{
-				// sltiu
-				strs<< "0x" << hex << current_Instr_Address << "\tsltiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
-				break;
-			}
-	case 12:{
-				// andi
-				strs<< "0x" << hex << current_Instr_Address << "\tandi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
-				break;
-			}
-	case 13:{
-				// ori
-		strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
-				break;
-			}
-	case 14:{
-				// xori
-		strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
-				break;
-			}
-	case 15:{
-				// lui
-				break;
-			}
-	case 32:{
-				// lb
-				break;
-			}
-	case 33:{
-				// lh
-				break;
-			}
-	case 35:{
-				// lw
-				break;
-			}
-	case 36:{
-				// lbu
-				break;
-			}
-	case 37:{
-				// lhu
-				break;
-			}
-	case 40:{
-				// sb
-				break;
-			}
-	case 41:{
-				// sh
-				break;
-			}
-	case 43:{
-				// sw
-				break;
-			}
-	default:{
-				// Unkown I-Format Instruction
-			}
-	}
-
-
-	
-	string temp_str = strs.str();
-	char* char_type = (char*) temp_str.c_str();
-	return ( char_type );
-}
-
 void DisSim::ExecuteI( unsigned int instWord)
 {
-	
 	unsigned int opcode, rs, rt, imm;
 
 	opcode	= (instWord>>26);
@@ -513,4 +527,30 @@ void DisSim::ExecuteI( unsigned int instWord)
 				// Unkown I-Format Instruction
 			}
 	}
+}
+void DisSim::ExecuteJ( unsigned int instWord)
+{
+	unsigned int opcode, address;
+	opcode	 = (instWord>>26);
+	address = (instWord & 0x03ffffff);
+
+	switch( opcode )
+	{
+	case 2:{
+				// j
+				current_Instr_Address = address - 4;
+				break;
+			}
+	case 3:{
+				// jal
+				regs[31] = current_Instr_Address + 4;
+				current_Instr_Address = address - 4;
+				break;
+			}
+	}
+}
+
+DisSim::~DisSim()
+{
+
 }
