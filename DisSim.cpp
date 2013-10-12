@@ -27,11 +27,13 @@ DisSim::DisSim(char * in , char * out)
 		{
 			Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
 			outFile<<decodeInst(instWord)<<endl;
+			current_Instr_Address += 4;
 		}
-		current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
+		current_Instr_Address = 0x00400004;		// reseting the instruction address to start execution + 4
 		while(!exitFlag)
 		{
 			ExecuteInst(Instr_Addresses.at(current_Instr_Address));
+			current_Instr_Address += 4;
 		}
 	}
 
@@ -53,17 +55,14 @@ char* DisSim::decodeInst(unsigned int instWord)
 	opcode = instWord >> 26;
 	if(0 == (opcode))
 	{
-		current_Instr_Address += 4;
 		return( decodeR(instWord) );
 	}
 	else if(0!= opcode && 2!=opcode && 3!=opcode && 16!=opcode && 17!=opcode && 18!=opcode && 19!=opcode)
 	{
-		current_Instr_Address += 4;
 		return ( decodeI(instWord) );
 	}
 	else if(opcode==2 || opcode==3)
 	{
-		current_Instr_Address += 4;
 		return ( decodeJ(instWord) );
 	}
 	else
@@ -77,7 +76,7 @@ char* DisSim::decodeInst(unsigned int instWord)
 	}
 }
 
-char* DisSim::decodeR(unsigned int instWord)
+char* DisSim::decodeR( unsigned int instWord)
 {
 	unsigned int rd, rs, rt, func, shamt, imm;
 	std::ostringstream strstream;
@@ -182,7 +181,7 @@ char* DisSim::decodeR(unsigned int instWord)
 		}
 	}
 }
-char * DisSim::decodeI( unsigned int instWord)
+char* DisSim::decodeI( unsigned int instWord)
 {
 	unsigned int opcode, rs, rt, imm;
 
@@ -197,40 +196,47 @@ char * DisSim::decodeI( unsigned int instWord)
 	{
 	case 4: {
 				// beq
-				char arr[9];
 				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 5: {
 				// bne
+				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t" << regNames.at(rt) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 8:	{
 				// addi
+				strs<< "0x" << hex << current_Instr_Address << "\taddi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 9:	{
 				// addiu
+				strs<< "0x" << hex << current_Instr_Address << "\taddiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 10:{
 				// slti
+				strs<< "0x" << hex << current_Instr_Address << "\tslti\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 11:{
 				// sltiu
+				strs<< "0x" << hex << current_Instr_Address << "\tsltiu\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 12:{
 				// andi
+				strs<< "0x" << hex << current_Instr_Address << "\tandi\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 13:{
 				// ori
+		strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 14:{
 				// xori
+		strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 15:{
