@@ -18,7 +18,7 @@ DisSim::DisSim(char * in , char * out)
 	for( int i=0 ; i<32 ; i++ )
 		regNames.insert(pair<int,char *>(i,tempr[i]));
 
-	inFile.open(in);
+	inFile.open(in , ios::in | ios::binary);
 	outFile.open(out);
 
 	if(inFile.fail())
@@ -106,7 +106,7 @@ char* DisSim::decodeR( unsigned int instWord)
 	{
 	case 0x20: // needs exception handling
 		{
-		strstream << "add\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -115,7 +115,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x21:
 		{
-		strstream << "addu\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -124,7 +124,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x22:
 		{
-		strstream << "sub\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\tsub\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -133,7 +133,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x24:
 		{
-		strstream << "and\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\tand\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -142,7 +142,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x25:
 		{
-		strstream << "or\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\tor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -151,7 +151,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x26:
 		{
-		strstream << "xor\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\txor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -160,7 +160,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x2A:
 		{
-		strstream << "slt\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		strstream<< "0x" << hex << current_Instr_Address << "\tslt\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -169,7 +169,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x2:
 		{
-        strstream << "srl\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+        strstream<< "0x" << hex << current_Instr_Address << "\tsrl\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 	memcpy(operation, str.c_str(), str.size() + 1);
@@ -178,7 +178,7 @@ char* DisSim::decodeR( unsigned int instWord)
 		break;
 	case 0x0:
 		{
-		strstream << "sll\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+		strstream<< "0x" << hex << current_Instr_Address << "\tsll\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
 		str = strstream.str();
 		char * operation = (char *)alloca(str.size() + 1);
 		memcpy(operation, str.c_str(), str.size() + 1);
@@ -262,32 +262,32 @@ char* DisSim::decodeI( unsigned int instWord)
 			}
 	case 32:{
 				// lb
-				strs<< "0x" << hex << current_Instr_Address << "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 33:{
 				// lh
-				strs<< "0x" << hex << current_Instr_Address << "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 35:{
 				// lw
-				strs<< "0x" << hex << current_Instr_Address << "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 40:{
 				// sb
-				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 41:{
 				// sh
-				strs<< "0x" << hex << current_Instr_Address << "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 43:{
 				// sw
-				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "\t( $" << regNames.at(rs) << " )";
+				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	default:{
@@ -298,7 +298,8 @@ char* DisSim::decodeI( unsigned int instWord)
 
 	
 	string temp_str = strs.str();
-	char* char_type = (char*) temp_str.c_str();
+	char * char_type = (char *)alloca(temp_str.size() + 1);
+	memcpy(char_type, temp_str.c_str(), temp_str.size() + 1);
 	return ( char_type );
 }
 char* DisSim::decodeJ( unsigned int instWord)
@@ -324,7 +325,8 @@ char* DisSim::decodeJ( unsigned int instWord)
 	 }
 
 	string temp_str = strs.str();
-	char* char_type = (char*) temp_str.c_str();
+	char * char_type = (char *)alloca(temp_str.size() + 1);
+	memcpy(char_type, temp_str.c_str(), temp_str.size() + 1);
 	return ( char_type );
 }
 
