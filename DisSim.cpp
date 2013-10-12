@@ -10,9 +10,115 @@ void DisSim::emitError(char *s)
 	exit(0);
 }
 
+char* DisSim::decodeR(unsigned int instWord)
+{
+	unsigned int rd, rs, rt, func, shamt, imm;
+	std::ostringstream strstream;
+	std::string str;
+	unsigned int adress;
+	func = instWord & 0x3F;
+	shamt = (instWord>>6) & 0x1f;
+	rd    = (instWord>>11) & 0x1f;
+	rt    = (instWord>>16) & 0x1f;
+	rs    = (instWord>>21) & 0x1f;
+	switch(func)
+	{
+	case 0x20: // needs exception handling
+		{
+		strstream << "add\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x21:
+		{
+		strstream << "addu\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x22:
+		{
+		strstream << "sub\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x24:
+		{
+		strstream << "and\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x25:
+		{
+		strstream << "or\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x26:
+		{
+		strstream << "xor\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x2A:
+		{
+		strstream << "slt\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", $" << regNames.find(rt)->second;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x2:
+		{
+        strstream << "srl\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0x0:
+		{
+		strstream << "sll\t$" << regNames.find(rd)->second <<", $" << regNames.find(rs)->second <<", " << dec << shamt;
+		str = strstream.str();
+		char * operation = (char *)alloca(str.size() + 1);
+		memcpy(operation, str.c_str(), str.size() + 1);
+		return operation;
+		}
+		break;
+	case 0xC:
+		{
+			return "SYSCALL";
+		}
+		break;
+	default:
+		{
+			return "Unkown R-Format Instruction";
+		}
+	}
+}
+
 char* DisSim::decodeInst(unsigned int instWord)
 {
-    unsigned int opcode;
+	unsigned int opcode;
 	opcode = instWord >> 26;
 	if(0 == (opcode))
 	{
