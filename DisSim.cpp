@@ -13,6 +13,8 @@ DisSim::DisSim(char * in , char * out)
 	current_Instr_Address = 0x00400000;	
 	memory_Address = 0x10010000;
 	exitFlag=false;
+	labelCount = 1;
+	bLabel = 0;
 
 	// mapping the register numbers to names
 	char* tempr[32] = { "zero","at","v0","v1","a0","a1","a2","a3","t0","t1","t2","t3","t4","t5","t6","t7","s0","s1","s2","s3","s4","s5","s6","s7","t8","t9","k0","k1","gp","sp","s8","ra"};
@@ -20,22 +22,32 @@ DisSim::DisSim(char * in , char * out)
 		regNames.insert(pair<int,char *>(i,tempr[i]));
 
 	inFile.open(in , ios::in | ios::binary);
-	outFile.open(out);
+	outFile[0].open(out);
 	regTrace.open("register trace.txt");
+	outFile[1].open("Label file.txt");
 
 	if(inFile.fail())
 		emitError("Cannot access input file\n");
 	else
 	{
 		unsigned int instWord=0;
-		while(inFile.read ((char *)&instWord, 4))
+		for( int i=0 ; i<2 ; i++ )
 		{
-			Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
-			outFile<<decodeInst(instWord)<<endl;
-			current_Instr_Address += 4;
+			while(inFile.read ((char *)&instWord, 4))
+			{
+				if( !i )
+					Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
+				outFile[i]<<decodeInst(instWord)<<endl;
+				current_Instr_Address += 4;
+			}
+			current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
+			bLabel=true;
+			inFile.close();
+			inFile.open(in , ios::in | ios::binary);
 		}
-		current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
-		
+
+
+
 		for( int i=0 ; i<32 ; i++ )
 				regTrace<< setw( 14 ) << regNames.at(i);
 			regTrace << endl;
@@ -83,6 +95,7 @@ char* DisSim::decodeInst( unsigned int instWord)
 }
 void DisSim::ExecuteInst( unsigned int instWord)
 {
+	regs[0] = 0;
 	unsigned int opcode;
 	opcode = instWord >> 26;
 	if(0 == (opcode))
@@ -221,83 +234,211 @@ char* DisSim::decodeI( unsigned int instWord)
 				// beq
 				imm = imm << 2;
 				sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
-				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
+				if ( !bLabel )
+				{
+					strs<< "0x" << hex << current_Instr_Address; 
+					if( Labels.find(current_Instr_Address + 4 + sImm) == Labels.end() )
+						Labels[current_Instr_Address + 4 + sImm] = labelCount++;
+				}
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tbeq\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t" ;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address + 4 + sImm;
+				else
+					strs<< "label" <<Labels[current_Instr_Address + 4 + sImm];
 				break;
 			}
 	case 5: {
 				// bne
 				imm = imm << 2;
-				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
-				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
+				sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
+				if ( !bLabel )
+				{
+					strs<< "0x" << hex << current_Instr_Address; 
+					if( Labels.find(current_Instr_Address + 4 + sImm) == Labels.end() )
+						Labels[current_Instr_Address + 4 + sImm] = labelCount++;
+				}
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tbne\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t" ;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address + 4 + sImm;
+				else
+					strs<< "label" <<Labels[current_Instr_Address + 4 + sImm];
 				break;
 			}
 	case 8:	{
 				// addi
-				strs<< "0x" << hex << current_Instr_Address << "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 9:	{
 				// addiu
-				strs<< "0x" << hex << current_Instr_Address << "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 10:{
 				// slti
-				strs<< "0x" << hex << current_Instr_Address << "\tslti\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tslti\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 11:{
 				// sltiu
-				strs<< "0x" << hex << current_Instr_Address << "\tsltiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tsltiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 12:{
 				// andi
-				strs<< "0x" << hex << current_Instr_Address << "\tandi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tandi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 13:{
 				// ori
-				strs<< "0x" << hex << current_Instr_Address << "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 14:{
 				// xori
-				strs<< "0x" << hex << current_Instr_Address << "\txori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\txori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 15:{
 				// lui
-				strs<< "0x" << hex << current_Instr_Address << "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 32:{
 				// lb
-				strs<< "0x" << hex << current_Instr_Address << "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 33:{
 				// lh
-				strs<< "0x" << hex << current_Instr_Address << "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 35:{
 				// lw
-				strs<< "0x" << hex << current_Instr_Address << "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 40:{
 				// sb
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
 				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 41:{
 				// sh
-				strs<< "0x" << hex << current_Instr_Address << "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
 	case 43:{
 				// sw
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address;
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
 				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
 				break;
 			}
@@ -324,12 +465,42 @@ char* DisSim::decodeJ( unsigned int instWord)
 	 {
 	 case 2:{
 				// j
-				strs<< "0x" << hex << current_Instr_Address << "\tj\t0x" << hex << address;
+		 		if( !bLabel )
+				{
+					if( Labels.find(address) == Labels.end() )
+						Labels[address] = labelCount++;
+					strs<< "0x" << hex << current_Instr_Address;
+				}
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tj\t0x";
+				if( !bLabel )
+					strs<< hex << address;
+				else
+					strs<< "label" << Labels[address];
 				break;
 			}
 	 case 3:{
 				// jal
-				strs<< "0x" << hex << current_Instr_Address << "\tjal\t0x" << hex << address;
+		 		if( !bLabel )
+				{
+					if( Labels.find(address) == Labels.end() )
+						Labels[address] = labelCount++;
+					strs<< "0x" << hex << current_Instr_Address;
+				}
+				else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+				strs<< "\tjal\t0x";
+				if( !bLabel )
+					strs<< hex << address;
+				else
+					strs<< "label" << Labels[address];
 				break;
 			}
 	 }
@@ -564,6 +735,7 @@ void DisSim::ExecuteJ( unsigned int instWord)
 DisSim::~DisSim()
 {
 	inFile.close();
-	outFile.close();
+	outFile[0].close();
+	outFile[1].close();
 	regTrace.close();
 }

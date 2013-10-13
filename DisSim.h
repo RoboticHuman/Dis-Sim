@@ -20,13 +20,17 @@ private:
 	int regs[32];								// The size of each register is 32 bits (int)
 	char memory[8*1024];						// each element in the memory is 8 bits (1 char) and we use 8 kilo bytes
 	ifstream inFile;							// The binary code input file stream
-	ofstream outFile;							// The Assembly code output file stream
+	ofstream outFile[2];							// The Assembly code output file stream
 	ofstream regTrace;
 	map< int , char * > regNames;				// Mapping the register numbers with their names
 	unsigned int current_Instr_Address;			// initial address = 0x00400000 and is incremented by 4 each time
 	unsigned int memory_Address;
 	map< int , unsigned int > Instr_Addresses;
 	bool exitFlag;
+	map< unsigned int , int > Labels;
+	int labelCount;
+	bool bLabel;
+
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
 	char * decodeInst( unsigned int );	// Takes the binary line from the constructor, extracts the opcode and
