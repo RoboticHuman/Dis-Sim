@@ -126,88 +126,115 @@ char* DisSim::decodeR( unsigned int instWord)
 	{
 	case 0x20: // needs exception handling
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x21:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x22:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tsub\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tsub\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x24:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tand\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tand\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x25:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x26:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\txor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\txor\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x2A:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tslt\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tslt\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x2:
 		{
-        strstream<< "0x" << hex << current_Instr_Address << "\tsrl\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-	memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+        strstream<< "\tsrl\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
 		}
 		break;
 	case 0x0:
 		{
-		strstream<< "0x" << hex << current_Instr_Address << "\tsll\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
-		str = strstream.str();
-		char * operation = (char *)alloca(str.size() + 1);
-		memcpy(operation, str.c_str(), str.size() + 1);
-		return operation;
+		if( !bLabel )
+		strstream<< "0x" << hex << current_Instr_Address;
+		else
+				{
+					if( Labels.find(current_Instr_Address) != Labels.end() )
+						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+				}
+		strstream<< "\tsll\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t" << dec << shamt;
 		}
 		break;
 	case 0xC:
 		{
-			return "SYSCALL";
+			return "\tSYSCALL";
 		}
 		break;
 	default:
@@ -215,6 +242,11 @@ char* DisSim::decodeR( unsigned int instWord)
 			return "Unkown R-Format Instruction";
 		}
 	}
+
+	str = strstream.str();
+	char * operation = (char *)alloca(str.size() + 1);
+    memcpy(operation, str.c_str(), str.size() + 1);
+	return operation;
 }
 char* DisSim::decodeI( unsigned int instWord)
 {
