@@ -15,6 +15,7 @@ DisSim::DisSim(char * in , char * out)
 	exitFlag=false;
 	labelCount = 1;
 	bLabel = 0;
+	bLI = 0;
 
 	// mapping the register numbers to names
 	char* tempr[32] = { "zero","at","v0","v1","a0","a1","a2","a3","t0","t1","t2","t3","t4","t5","t6","t7","s0","s1","s2","s3","s4","s5","s6","s7","t8","t9","k0","k1","gp","sp","s8","ra"};
@@ -37,9 +38,11 @@ DisSim::DisSim(char * in , char * out)
 			{
 				if( !i )
 					Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
-				outFile[i]<<decodeInst(instWord)<<endl;
-				if(bLabel)
-				cout<<decodeInst(instWord)<<endl;
+				char* tempstr = decodeInst(instWord);
+				if( !bLI )
+					outFile[i]<<tempstr<<endl;
+				if(bLabel && !bLI)
+					cout<<tempstr<<endl;
 				current_Instr_Address += 4;
 			}
 			current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
@@ -135,11 +138,7 @@ char* DisSim::decodeR( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-		if(rs == 0)
-		{
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
-		}
-		else if(rt == 0)
+		if(rt == 0)
 		{
 			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
 		}
@@ -329,7 +328,10 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( sImm > 0 )
+					strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				else
+					strs<< "\tsubi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << -sImm;
 				break;
 			}
 	case 9:	{
@@ -382,14 +384,22 @@ char* DisSim::decodeI( unsigned int instWord)
 			}
 	case 13:{
 				// ori
-				if( !bLabel )
-					strs<< "0x" << hex << current_Instr_Address;
+				if( !bLI )
+				{
+					if( !bLabel )
+						strs<< "0x" << hex << current_Instr_Address;
+					else
+					{
+						if( Labels.find(current_Instr_Address) != Labels.end() )
+							strs<< "label" << Labels.at(current_Instr_Address) << ":";
+					}
+					strs<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
+				}
 				else
 				{
-					if( Labels.find(current_Instr_Address) != Labels.end() )
-						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+					strs<< "\tli\t$" << regNames.at(rt) << ",\t0x" << hex << ((upperHalfWord<<16)|imm);
+					bLI = 0;
 				}
-				strs<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
 				break;
 			}
 	case 14:{
@@ -413,7 +423,13 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+				if( !bLabel || rt != 1 )
+					strs<< "\tlui\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+				else
+				{
+					upperHalfWord = imm;
+					bLI= 1;
+				}
 				break;
 			}
 	case 32:{
@@ -425,7 +441,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tlb\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	case 33:{
@@ -437,7 +453,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tlh\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	case 35:{
@@ -449,7 +465,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tlw\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	case 40:{
@@ -461,7 +477,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "0x" << hex << current_Instr_Address << "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tsb\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	case 41:{
@@ -473,7 +489,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tsh\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	case 43:{
@@ -485,7 +501,7 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "0x" << hex << current_Instr_Address << "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "( $" << regNames.at(rs) << " )";
+				strs<< "\tsw\t$" << regNames.at(rt) << ",\t" << dec << imm << "($" << regNames.at(rs) << ")";
 				break;
 			}
 	default:{
@@ -683,7 +699,8 @@ void DisSim::ExecuteI( unsigned int instWord)
 			}
 	case 10:{
 				// slti
-				regs[rt] = (regs[rs] < imm);
+				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
+				regs[rt] = (regs[rs] < sImm);
 				break;
 			}
 	case 11:{

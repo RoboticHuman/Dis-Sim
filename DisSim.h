@@ -30,6 +30,8 @@ private:
 	map< unsigned int , int > Labels;
 	int labelCount;
 	bool bLabel;
+	bool bLI;
+	unsigned int upperHalfWord;
 
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
