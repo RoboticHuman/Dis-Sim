@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -20,12 +21,11 @@ DisSim::DisSim(char * in , char * out)
 
 	inFile.open(in , ios::in | ios::binary);
 	outFile.open(out);
+	regTrace.open("register trace.txt");
 
 	if(inFile.fail())
 		emitError("Cannot access input file\n");
-	if(outFile.fail())
-		emitError("Cannot access output file\n");
-	if(!inFile.fail() && !outFile.fail())
+	else
 	{
 		unsigned int instWord=0;
 		while(inFile.read ((char *)&instWord, 4))
@@ -36,8 +36,15 @@ DisSim::DisSim(char * in , char * out)
 		}
 		current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
 		
+		for( int i=0 ; i<32 ; i++ )
+				regTrace<< setw( 14 ) << regNames.at(i);
+			regTrace << endl;
+
 		do
 		{
+			for( int i=0 ; i<32 ; i++ )
+				regTrace<< setw( 14 ) << hex << regs[i];
+			regTrace << endl;
 			ExecuteInst(Instr_Addresses.at(current_Instr_Address));
 			current_Instr_Address += 4;
 		}while(!exitFlag);
@@ -558,4 +565,5 @@ DisSim::~DisSim()
 {
 	inFile.close();
 	outFile.close();
+	regTrace.close();
 }
