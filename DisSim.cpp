@@ -510,9 +510,9 @@ char* DisSim::decodeJ( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tj\t0x";
+				strs<< "\tj\t";
 				if( !bLabel )
-					strs<< hex << address;
+					strs<< "0x" << hex << address;
 				else
 					strs<< "label" << Labels[address];
 				break;
@@ -530,9 +530,9 @@ char* DisSim::decodeJ( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\tjal\t0x";
+				strs<< "\tjal\t";
 				if( !bLabel )
-					strs<< hex << address;
+					strs<< "0x" << hex << address;
 				else
 					strs<< "label" << Labels[address];
 				break;
