@@ -9,6 +9,10 @@ int main(int argc, char *argv[])
 {	
 	switch( argc )
 	{
+	case 1:{
+				DisSim x( "s1.bin" , "outfile.txt" );
+				break;
+		   }
 	case 2:{
 				DisSim x( argv[1] , "outfile.txt" );
 				break;
@@ -18,7 +22,7 @@ int main(int argc, char *argv[])
 				break;
 		   }
 	default:{
-				cout<<"Error with input file path! ";
+				cout<<"Error with input! ";
 			}
 	}
 
