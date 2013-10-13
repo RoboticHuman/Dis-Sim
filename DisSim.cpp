@@ -328,10 +328,17 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				if( sImm > 0 )
-					strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !rs )
+				{
+					strs<< "\tli\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+				}
 				else
-					strs<< "\tsubi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << -sImm;
+				{
+					if( sImm > 0 )
+						strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+					else
+						strs<< "\tsubi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << -sImm;
+				}
 				break;
 			}
 	case 9:	{
@@ -397,7 +404,12 @@ char* DisSim::decodeI( unsigned int instWord)
 				}
 				else
 				{
-					strs<< "\tli\t$" << regNames.at(rt) << ",\t0x" << hex << ((upperHalfWord<<16)|imm);
+					unsigned int myTempVal = ((upperHalfWord<<16)|imm);
+					if( myTempVal >= memory_Address && memory_Address<= (8*1024 + memory_Address))
+						strs<< "\tla\t$";
+					else
+						strs<< "\tli\t$";
+					strs<< regNames.at(rt) << ",\t0x" << hex << ((upperHalfWord<<16)|imm);
 					bLI = 0;
 				}
 				break;
