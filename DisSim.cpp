@@ -310,8 +310,7 @@ char* DisSim::decodeJ( unsigned int instWord)
 {
 	 unsigned int opcode, address;
 	 opcode	 = (instWord>>26);
-	 address = (instWord & 0x03ffffff);
-
+	 address = (instWord & 0x03ffffff) << 2;
 	 stringstream strs;
 
 	 switch( opcode)
@@ -537,7 +536,7 @@ void DisSim::ExecuteJ( unsigned int instWord)
 {
 	unsigned int opcode, address;
 	opcode	 = (instWord>>26);
-	address = (instWord & 0x03ffffff);
+	address = (instWord & 0x03ffffff) << 2;
 
 	switch( opcode )
 	{
