@@ -38,6 +38,8 @@ DisSim::DisSim(char * in , char * out)
 				if( !i )
 					Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
 				outFile[i]<<decodeInst(instWord)<<endl;
+				if(bLabel)
+				cout<<decodeInst(instWord)<<endl;
 				current_Instr_Address += 4;
 			}
 			current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
