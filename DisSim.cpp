@@ -615,7 +615,11 @@ void DisSim::ExecuteR( unsigned int instWord)
 			}
 			else if(regs[2] == 4)
 			{
-				cout<< regs[4];
+				int i = 0;
+				while ( memory[regs[4] + i] )
+				{
+					cout<< memory[regs[4] + i++];
+				}
 			}
 			else if(regs[2] == 10)
 			{
