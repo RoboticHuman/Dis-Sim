@@ -212,11 +212,15 @@ char* DisSim::decodeI( unsigned int instWord)
 	{
 	case 4: {
 				// beq
+				imm = imm << 2;
+				sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
 				strs<< "0x" << hex << current_Instr_Address << "\tbeq\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
 				break;
 			}
 	case 5: {
 				// bne
+				imm = imm << 2;
+				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
 				strs<< "0x" << hex << current_Instr_Address << "\tbne\t$" << regNames.at(rs) << ",\t$" << regNames.at(rt) << ",\t0x" << hex << current_Instr_Address + 4 + sImm;
 				break;
 			}
@@ -426,6 +430,7 @@ void DisSim::ExecuteI( unsigned int instWord)
 	{
 	case 4: {
 				// beq
+				imm = imm <<2;
 				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
 				if( regs[rs] == regs[rt] )
 					current_Instr_Address += sImm;
@@ -433,6 +438,7 @@ void DisSim::ExecuteI( unsigned int instWord)
 			}
 	case 5: {
 				// bne
+				imm = imm <<2;
 				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
 				if( regs[rs] == regs[rt] )
 					current_Instr_Address += sImm;
