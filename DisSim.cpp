@@ -415,6 +415,8 @@ char* DisSim::decodeI( unsigned int instWord)
 				}
 				else
 				{
+					if( Labels.find(current_Instr_Address-4) != Labels.end() )
+							strs<< "label" << Labels.at(current_Instr_Address-4) << ":";
 					unsigned int myTempVal = ((upperHalfWord<<16)|imm);
 					if( myTempVal >= memory_Address && myTempVal<= (8*1024 + memory_Address))
 						strs<< "\tla\t$";
