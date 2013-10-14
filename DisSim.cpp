@@ -10,7 +10,7 @@ using namespace std;
 DisSim::DisSim(char * in , char * out)
 {
 	regs[0]=0;
-
+	j = false;
 	current_Instr_Address = 0x00400000;	
 	memory_Address = 0x10010000;
 	exitFlag=false;
@@ -57,7 +57,8 @@ DisSim::DisSim(char * in , char * out)
 			inFile.open(in , ios::in | ios::binary);
 		}
 
-
+		if(j)
+			free(char_type1);
 
 		for( int i=0 ; i<32 ; i++ )
 				regTrace<< setw( 14 ) << regNames.at(i);
@@ -544,7 +545,8 @@ char* DisSim::decodeI( unsigned int instWord)
 }
 char* DisSim::decodeJ( unsigned int instWord)
 {
-	 free(char_type);
+	 if(j)
+		 free(char_type1);
 	 unsigned int opcode, address;
 	 opcode	 = (instWord>>26);
 	 address = (instWord & 0x03ffffff) << 2;
@@ -594,10 +596,11 @@ char* DisSim::decodeJ( unsigned int instWord)
 			}
 	 }
 
+	j = true;
 	string temp_str = strs.str();
-	char *char_type = (char *)malloc(temp_str.size() + 1);
-	memcpy(char_type, temp_str.c_str(), temp_str.size() + 1);
-	return ( char_type );
+	char_type1 = (char *)malloc(temp_str.size() + 1);
+	memcpy(char_type1, temp_str.c_str(), temp_str.size() + 1);
+	return ( char_type1 );
 }
 
 void DisSim::ExecuteR( unsigned int instWord)
