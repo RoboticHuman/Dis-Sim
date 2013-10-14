@@ -43,9 +43,11 @@ DisSim::DisSim(char * in , char * out)
 					Instr_Addresses.insert(pair<int, unsigned int>( current_Instr_Address , instWord ));
 				char* tempstr = decodeInst(instWord);
 				if( !bLI )
+				{	
 					outFile[i]<<tempstr<<endl;
-				if(bLabel && !bLI)
-					cout<<tempstr<<endl;
+					if(bLabel)
+						cout<<tempstr<<endl;
+				}
 				current_Instr_Address += 4;
 			}
 			current_Instr_Address = 0x00400000;		// reseting the instruction address to start execution
@@ -154,15 +156,14 @@ char* DisSim::decodeR( unsigned int instWord)
 		if( !bLabel )
 		strstream<< "0x" << hex << current_Instr_Address;
 		else
-				{
-					if( Labels.find(current_Instr_Address) != Labels.end() )
-						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
-				}
-		if(rt == 0)
 		{
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+			if( Labels.find(current_Instr_Address) != Labels.end() )
+				strstream<< "label" << Labels.at(current_Instr_Address) << ":";
 		}
-		strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
+		if(rt == 0)
+			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+		else
+			strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
 	case 0x22:
@@ -552,7 +553,7 @@ char* DisSim::decodeJ( unsigned int instWord)
 		 		if( !bLabel )
 				{
 					if( Labels.find(address) == Labels.end() )
-						Labels[address] = labelCount++;
+						Labels.insert(pair<unsigned int,int>(address,labelCount++));
 					strs<< "0x" << hex << current_Instr_Address;
 				}
 				else
@@ -564,7 +565,7 @@ char* DisSim::decodeJ( unsigned int instWord)
 				if( !bLabel )
 					strs<< "0x" << hex << address;
 				else
-					strs<< "label" << Labels[address];
+					strs<< "label" << Labels.at(address);
 				break;
 			}
 	 case 3:{
@@ -666,9 +667,9 @@ void DisSim::ExecuteR( unsigned int instWord)
 			else if(regs[2] == 4)
 			{
 				int i = 0;
-				while ( memory[regs[4] + i] )
+				while ( memory[regs[4] + i - memory_Address] )
 				{
-					cout<< memory[regs[4] + i++];
+					cout<< memory[regs[4] + i++ - memory_Address];
 				}
 			}
 			else if(regs[2] == 10)
