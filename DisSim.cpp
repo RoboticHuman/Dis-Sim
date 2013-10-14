@@ -7,6 +7,11 @@
 
 using namespace std;
 
+#define Cwhite	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_WHITE)
+#define Cred	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_RED)
+#define Cgreen	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_GREEN)
+#define Cblue	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_BLUE)
+
 DisSim::DisSim(char * in )
 {
 	regs[0]=0;
@@ -17,6 +22,8 @@ DisSim::DisSim(char * in )
 	labelCount = 1;
 	bLabel = 0;
 	bLI = 0;
+
+	cout<<Cwhite;
 
 	for(int i=0 ; i< (8*1024) ; i++ ) 
 		memory[i]=char(0);
@@ -36,9 +43,9 @@ DisSim::DisSim(char * in )
 	else
 	{
 		unsigned int instWord=0;
-		cout<<"# Disassembled code:\n";
-		cout<<".text\n";
-		cout<<".globl main\n";
+		cout<< Cgreen << "# Disassembled code:\n" << Cwhite;
+		cout<< Cred << ".text\n";
+		cout<<".globl " << Cwhite << "main\n";
 		cout<<"main:\n";
 		for( int i=0 ; i<2 ; i++ )
 		{
@@ -51,7 +58,8 @@ DisSim::DisSim(char * in )
 				{	
 					outFile[i]<<tempstr<<endl;
 					if(bLabel)
-						cout<<tempstr<<endl;
+						//cout<<tempstr<<endl;
+						DisplayColor(tempstr);
 				}
 				current_Instr_Address += 4;
 			}
@@ -65,7 +73,7 @@ DisSim::DisSim(char * in )
 			free(char_type1);
 
 		int dashes=80;	while(dashes--) cout<<"-";
-		cout<< "Excution: \n";
+		cout<< Cgreen << "Excution: \n" << Cwhite;
 
 		for( int i=0 ; i<32 ; i++ )
 				regTrace<< setw( 14 ) << regNames.at(i);
@@ -856,4 +864,60 @@ DisSim::~DisSim()
 	outFile[0].close();
 	outFile[1].close();
 	regTrace.close();
+}
+
+void DisSim::DisplayColor( char*& buff )
+{
+	char* e = (char *)malloc(40);
+	memcpy(e, buff, 40);
+	string strbuff( e );
+	if( strbuff.find(":")!=-1 )
+	{
+		cout<<strbuff.substr(0,strbuff.find(":")+1);
+		strbuff=strbuff.substr(strbuff.find(":")+1,100);
+	}
+	if( strbuff.find("$")!=-1 )
+	{
+		cout<< Cblue <<strbuff.substr(0,strbuff.find("$")) << Cwhite;
+		strbuff=strbuff.substr(strbuff.find("$"),100);
+		cout<< Cred <<strbuff.substr(0,strbuff.find(",")) << Cwhite << ',';
+		strbuff=strbuff.substr(strbuff.find(",")+1,100);
+	}
+	else
+	{
+		if( strbuff.find("label")!=-1 )
+		{
+			cout<< Cblue <<strbuff.substr(0,strbuff.find("label")) << Cwhite << strbuff.substr(strbuff.find("label"),100);
+			strbuff="";
+		}
+		else if( strbuff.find("SYSCALL")!=-1 )
+		{
+			cout<< Cblue <<strbuff;
+			strbuff="";
+		}
+		else
+		{
+			cout<< Cgreen <<strbuff;
+			strbuff="";
+		}
+	}
+	if( strbuff.find("$")!=-1 )
+	{
+		if( strbuff.find(",")!=-1 )
+		{
+			cout<< Cred <<strbuff.substr(0,strbuff.find(",")) << Cwhite << ',';
+			strbuff=strbuff.substr(strbuff.find(",")+1,100);
+		}
+		else
+		{
+			cout<< Cred <<strbuff.substr(0,strbuff.size()) << Cwhite;
+			strbuff="";
+		}
+	}
+	if( strbuff.find("$")!=-1 )
+	{
+		cout<< Cred <<strbuff.substr(0,strbuff.size()) << Cwhite;
+		strbuff="";
+	}
+	cout<< Cwhite << strbuff << endl;
 }

@@ -2,6 +2,7 @@
 #include <fstream>
 #include "stdlib.h"
 #include <map>
+#include <Windows.h>
 //#include <string> // if needed..
 
 
@@ -10,7 +11,24 @@ using namespace std;
 #ifndef DIS_SIM_H
 #define DIS_SIM_H
 
-// This is just a cooler way to write the skeleton that the dr. sent..
+//COLORS STUFF---------------------------------------------------------------------------
+
+class TextAttr 
+{
+	friend std::ostream& operator<<(std::ostream& out, TextAttr attr)
+	{
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), attr.value);
+			return out;
+	}
+	public:
+	explicit TextAttr(WORD attributes): value(attributes) {}
+	private:
+		WORD value;
+};
+#define FOREGROUND_WHITE (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+
+//COLORS STUFF--------------------------------------------------------------------------------
+
 
 class DisSim
 {
@@ -49,6 +67,7 @@ private:
 	void ExecuteI( unsigned int );
 	void ExecuteJ( unsigned int );
 
+	void DisplayColor(char* &);
 public:
 	DisSim( char * );			// The constructor recieves the input and output file paths
 										// Opens the files, takes instruction by instruction sends it to decodeInst
