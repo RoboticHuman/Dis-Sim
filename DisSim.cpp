@@ -7,7 +7,7 @@
 
 using namespace std;
 
-DisSim::DisSim(char * in , char * out)
+DisSim::DisSim(char * in )
 {
 	regs[0]=0;
 	j = false;
@@ -27,7 +27,7 @@ DisSim::DisSim(char * in , char * out)
 		regNames.insert(pair<int,char *>(i,tempr[i]));
 
 	inFile.open(in , ios::in | ios::binary);
-	outFile[0].open(out);
+	outFile[0].open("standard output file.txt");
 	regTrace.open("register trace.txt");
 	outFile[1].open("Label file.txt");
 
@@ -148,39 +148,43 @@ char* DisSim::decodeR( unsigned int instWord)
 	case 0x20: // needs exception handling
 		{
 		if( !bLabel )
-		strstream<< "0x" << hex << current_Instr_Address;
+			strstream<< "0x" << hex << current_Instr_Address<< "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		else
-				{
-					if( Labels.find(current_Instr_Address) != Labels.end() )
-						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
-				}
-		if(rt == 0)
 		{
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
-		}
-		else if(rs == 0)
-		{
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
-		}
-		else
-		strstream<< "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
+			if( Labels.find(current_Instr_Address) != Labels.end() )
+				strstream<< "label" << Labels.at(current_Instr_Address) << ":";
+			if(rt == 0)
+			{
+				strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+			}
+			else if(rs == 0)
+			{
+				strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
+			}
+			else
+				strstream<< "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
+			}
 		}
 		break;
 	case 0x21:
 		{
 		if( !bLabel )
-		strstream<< "0x" << hex << current_Instr_Address;
+			strstream<< "0x" << hex << current_Instr_Address<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		else
 		{
 			if( Labels.find(current_Instr_Address) != Labels.end() )
 				strstream<< "label" << Labels.at(current_Instr_Address) << ":";
-		}
-		if(rt == 0)
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
-		else if(rs == 0)
-			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
-		else
-			strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
+			if(rt == 0)
+			{
+				strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+			}
+			else if(rs == 0)
+			{
+				strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
+			}
+			else
+				strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
+			}
 		}
 		break;
 	case 0x22:
@@ -347,38 +351,40 @@ char* DisSim::decodeI( unsigned int instWord)
 	case 8:	{
 				// addi
 				if( !bLabel )
-					strs<< "0x" << hex << current_Instr_Address;
+					strs<< "0x" << hex << current_Instr_Address<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				else
 				{
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
-				}
-				if( !rs )
-				{
-					strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
-				}
-				else
-				{
-					if( sImm > 0 )
-						strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				
+					if( !rs )
+					{
+						strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
+					}
 					else
-						strs<< "\tsubi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << -sImm;
+					{
+						if( sImm > 0 )
+							strs<< "\taddi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+						else
+							strs<< "\tsubi\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << -sImm;
+					}
 				}
 				break;
 			}
 	case 9:	{
 				// addiu
 				if( !bLabel )
-					strs<< "0x" << hex << current_Instr_Address;
+					strs<< "0x" << hex << current_Instr_Address<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				else
 				{
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
+				
+					if( !rs )
+						strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
+					else
+						strs<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				}
-				if( !rs )
-					strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
-				else
-					strs<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 10:{
@@ -419,28 +425,28 @@ char* DisSim::decodeI( unsigned int instWord)
 			}
 	case 13:{
 				// ori
-				if( !bLI )
+				if( !bLabel )
+					strs<< "0x" << hex << current_Instr_Address<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
+				else
 				{
-					if( !bLabel )
-						strs<< "0x" << hex << current_Instr_Address;
-					else
+					if( !bLI )
 					{
 						if( Labels.find(current_Instr_Address) != Labels.end() )
 							strs<< "label" << Labels.at(current_Instr_Address) << ":";
+						strs<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
 					}
-					strs<< "\tori\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t0x" << hex << imm;
-				}
-				else
-				{
-					if( Labels.find(current_Instr_Address-4) != Labels.end() )
-							strs<< "label" << Labels.at(current_Instr_Address-4) << ":";
-					unsigned int myTempVal = ((upperHalfWord<<16)|imm);
-					if( myTempVal >= memory_Address && myTempVal<= (8*1024 + memory_Address))
-						strs<< "\tla\t$";
 					else
-						strs<< "\tli\t$";
-					strs<< regNames.at(rt) << ",\t0x" << hex << myTempVal;
-					bLI = 0;
+					{
+						if( Labels.find(current_Instr_Address-4) != Labels.end() )
+							strs<< "label" << Labels.at(current_Instr_Address-4) << ":";
+						unsigned int myTempVal = ((upperHalfWord<<16)|imm);
+						if( myTempVal >= memory_Address && myTempVal<= (8*1024 + memory_Address))
+							strs<< "\tla\t$";
+						else
+							strs<< "\tli\t$";
+						strs<< regNames.at(rt) << ",\t0x" << hex << myTempVal;
+						bLI = 0;
+					}
 				}
 				break;
 			}

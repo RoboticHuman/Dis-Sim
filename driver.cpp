@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "stdlib.h"
 #include "DisSim.h"
 
@@ -10,15 +11,17 @@ int main(int argc, char *argv[])
 	switch( argc )
 	{
 	case 1:{
-				DisSim x( "s1.bin" , "outfile.txt" );
+				string filename;
+				cout<<"Please Enter the file name: ";
+				cin>>filename;
+				char* charfilename = (char *)alloca(filename.size() + 1);
+				memcpy(charfilename, filename.c_str(), filename.size() + 1);
+				int dashes=80; while(dashes--) cout<<'-';
+				DisSim x( charfilename );
 				break;
 		   }
 	case 2:{
-				DisSim x( argv[1] , "outfile.txt" );
-				break;
-		   }
-	case 3:{
-				DisSim x( argv[1] , argv[2] );
+				DisSim x( argv[1] );
 				break;
 		   }
 	default:{

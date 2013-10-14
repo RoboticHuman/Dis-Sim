@@ -50,7 +50,7 @@ private:
 	void ExecuteJ( unsigned int );
 
 public:
-	DisSim( char * , char * );			// The constructor recieves the input and output file paths
+	DisSim( char * );			// The constructor recieves the input and output file paths
 										// Opens the files, takes instruction by instruction sends it to decodeInst
 										// Recieves the assembly translation of the instruction and puts it in the out file followed by \n
 	~DisSim();
