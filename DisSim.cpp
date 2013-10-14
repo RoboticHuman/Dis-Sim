@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 
+
 using namespace std;
 
 DisSim::DisSim(char * in , char * out)
@@ -543,6 +544,7 @@ char* DisSim::decodeI( unsigned int instWord)
 }
 char* DisSim::decodeJ( unsigned int instWord)
 {
+	 free(char_type);
 	 unsigned int opcode, address;
 	 opcode	 = (instWord>>26);
 	 address = (instWord & 0x03ffffff) << 2;
@@ -593,7 +595,7 @@ char* DisSim::decodeJ( unsigned int instWord)
 	 }
 
 	string temp_str = strs.str();
-	char * char_type = (char *)alloca(temp_str.size() + 1);
+	char *char_type = (char *)malloc(temp_str.size() + 1);
 	memcpy(char_type, temp_str.c_str(), temp_str.size() + 1);
 	return ( char_type );
 }
