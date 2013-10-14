@@ -36,6 +36,10 @@ DisSim::DisSim(char * in , char * out)
 	else
 	{
 		unsigned int instWord=0;
+		cout<<"# Disassembled code:\n";
+		cout<<".text\n";
+		cout<<".globl main\n";
+		cout<<"main:\n";
 		for( int i=0 ; i<2 ; i++ )
 		{
 			while(inFile.read ((char *)&instWord, 4))
@@ -60,6 +64,9 @@ DisSim::DisSim(char * in , char * out)
 		if(j)
 			free(char_type1);
 
+		int dashes=80;	while(dashes--) cout<<"-";
+		cout<< "Excution: \n";
+
 		for( int i=0 ; i<32 ; i++ )
 				regTrace<< setw( 14 ) << regNames.at(i);
 			regTrace << endl;
@@ -72,6 +79,8 @@ DisSim::DisSim(char * in , char * out)
 			ExecuteInst(Instr_Addresses.at(current_Instr_Address));
 			current_Instr_Address += 4;
 		}while(!exitFlag);
+		cout<<endl;
+		dashes=80;	while(dashes--) cout<<"-";
 	}
 }
 void DisSim::emitError(char *s)
