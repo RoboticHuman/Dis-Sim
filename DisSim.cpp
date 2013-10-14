@@ -158,6 +158,10 @@ char* DisSim::decodeR( unsigned int instWord)
 		{
 			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
 		}
+		else if(rs == 0)
+		{
+			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
+		}
 		else
 		strstream<< "\tadd\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
@@ -173,6 +177,8 @@ char* DisSim::decodeR( unsigned int instWord)
 		}
 		if(rt == 0)
 			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+		else if(rs == 0)
+			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rt)->second;
 		else
 			strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
