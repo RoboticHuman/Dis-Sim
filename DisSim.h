@@ -32,6 +32,8 @@ private:
 	bool bLabel;
 	bool bLI;
 	unsigned int upperHalfWord;
+	bool j;
+	char * char_type1;
 
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
