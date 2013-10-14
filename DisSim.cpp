@@ -17,6 +17,9 @@ DisSim::DisSim(char * in , char * out)
 	bLabel = 0;
 	bLI = 0;
 
+	for(int i=0 ; i< (8*1024) ; i++ ) 
+		memory[i]=char(0);
+
 	// mapping the register numbers to names
 	char* tempr[32] = { "zero","at","v0","v1","a0","a1","a2","a3","t0","t1","t2","t3","t4","t5","t6","t7","s0","s1","s2","s3","s4","s5","s6","s7","t8","t9","k0","k1","gp","sp","s8","ra"};
 	for( int i=0 ; i<32 ; i++ )
@@ -330,7 +333,7 @@ char* DisSim::decodeI( unsigned int instWord)
 				}
 				if( !rs )
 				{
-					strs<< "\tli\t$" << regNames.at(rt) << ",\t0x" << hex << imm;
+					strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
 				}
 				else
 				{
@@ -350,7 +353,10 @@ char* DisSim::decodeI( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strs<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
-				strs<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
+				if( !rs )
+					strs<< "\tli\t$" << regNames.at(rt) << ",\t" << dec << imm;
+				else
+					strs<< "\taddiu\t$" << regNames.at(rt) << ",\t$" << regNames.at(rs) << ",\t" << dec << imm;
 				break;
 			}
 	case 10:{
@@ -405,11 +411,11 @@ char* DisSim::decodeI( unsigned int instWord)
 				else
 				{
 					unsigned int myTempVal = ((upperHalfWord<<16)|imm);
-					if( myTempVal >= memory_Address && memory_Address<= (8*1024 + memory_Address))
+					if( myTempVal >= memory_Address && myTempVal<= (8*1024 + memory_Address))
 						strs<< "\tla\t$";
 					else
 						strs<< "\tli\t$";
-					strs<< regNames.at(rt) << ",\t0x" << hex << ((upperHalfWord<<16)|imm);
+					strs<< regNames.at(rt) << ",\t0x" << hex << myTempVal;
 					bLI = 0;
 				}
 				break;
