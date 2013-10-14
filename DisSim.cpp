@@ -158,6 +158,10 @@ char* DisSim::decodeR( unsigned int instWord)
 					if( Labels.find(current_Instr_Address) != Labels.end() )
 						strstream<< "label" << Labels.at(current_Instr_Address) << ":";
 				}
+		if(rt == 0)
+		{
+			strstream<< "\tmove\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second;
+		}
 		strstream<< "\taddu\t$" << regNames.find(rd)->second <<",\t$" << regNames.find(rs)->second <<",\t$" << regNames.find(rt)->second;
 		}
 		break;
