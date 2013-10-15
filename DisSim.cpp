@@ -7,10 +7,6 @@
 
 using namespace std;
 
-#define Cwhite	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_WHITE)
-#define Cred	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_RED)
-#define Cgreen	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_GREEN)
-#define Cblue	TextAttr(FOREGROUND_INTENSITY | FOREGROUND_BLUE)
 
 DisSim::DisSim(char * in )
 {
@@ -900,6 +896,13 @@ void DisSim::DisplayColor( char*& buff )
 			cout<< Cgreen <<strbuff;
 			strbuff="";
 		}
+	}
+	if( strbuff.find("(")!=-1 )
+	{
+		cout<< strbuff.substr(0,strbuff.find("$"));
+		strbuff.erase(0,strbuff.find("$"));
+		cout<< Cred << strbuff.substr(0,strbuff.find(")")) << Cwhite <<')';
+		strbuff = "";
 	}
 	if( strbuff.find("$")!=-1 )
 	{

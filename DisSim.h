@@ -2,7 +2,7 @@
 #include <fstream>
 #include "stdlib.h"
 #include <map>
-#include <Windows.h>
+#include "colorcmd.h"
 //#include <string> // if needed..
 
 
@@ -10,25 +10,6 @@ using namespace std;
 
 #ifndef DIS_SIM_H
 #define DIS_SIM_H
-
-//COLORS STUFF---------------------------------------------------------------------------
-
-class TextAttr 
-{
-	friend std::ostream& operator<<(std::ostream& out, TextAttr attr)
-	{
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), attr.value);
-			return out;
-	}
-	public:
-	explicit TextAttr(WORD attributes): value(attributes) {}
-	private:
-		WORD value;
-};
-#define FOREGROUND_WHITE (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
-
-//COLORS STUFF--------------------------------------------------------------------------------
-
 
 class DisSim
 {
