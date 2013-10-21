@@ -47,6 +47,7 @@ private:
 	void ExecuteR( unsigned int );
 	void ExecuteI( unsigned int );
 	void ExecuteJ( unsigned int );
+	bool IsBigEndian();
 
 	void DisplayColor(char* &);
 public:

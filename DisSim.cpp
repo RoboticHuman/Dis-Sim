@@ -574,7 +574,7 @@ char* DisSim::decodeJ( unsigned int instWord)
 		 free(char_type1);
 	 unsigned int opcode, address;
 	 opcode	 = (instWord>>26);
-	 address = (instWord & 0x03ffffff) << 2;
+	 address = ((instWord & 0x03ffffff) << 2) | (current_Instr_Address & 0xf0000000);
 	 stringstream strs;
 
 	 switch( opcode)
@@ -642,7 +642,11 @@ void DisSim::ExecuteR( unsigned int instWord)
 	{
 	case 0x20:
 		{	//add
-			regs[rd] = regs[rs] + regs[rt];
+			unsigned long expchk = regs[rs] + regs[rt];
+			if(!(expchk & 0x1111111100000000))
+				regs[rd] = regs[rs] + regs[rt];
+			else
+				emitError("Overflow!");
 		}
 		break;
 	case 0x21:
@@ -792,17 +796,35 @@ void DisSim::ExecuteI( unsigned int instWord)
 	case 33:{
 				// lh
 				int sImm  = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;
-				regs[rt] = memory[(regs[rs] + sImm) - memory_Address] << 8;
-				regs[rt] |= memory[(regs[rs] + sImm + 1) - memory_Address];
+				if( IsBigEndian() )
+				{
+					regs[rt] = memory[(regs[rs] + sImm) - memory_Address] << 8;
+					regs[rt] |= memory[(regs[rs] + sImm + 1) - memory_Address];
+				}
+				else
+				{
+					regs[rt] = memory[(regs[rs] + sImm + 1) - memory_Address] << 8;
+					regs[rt] |= memory[(regs[rs] + sImm) - memory_Address];
+				}
 				break;
 			}
 	case 35:{
 				// lw
 				int sImm  = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;	// sign extending the immediate field
-				regs[rt]  = memory[(regs[rs] + sImm) - memory_Address] << 24;
-				regs[rt] |= memory[(regs[rs] + sImm + 1) - memory_Address] << 16;
-				regs[rt] |= memory[(regs[rs] + sImm + 2) - memory_Address] << 8;
-				regs[rt] |= memory[(regs[rs] + sImm + 3) - memory_Address];
+				if( IsBigEndian() )
+				{
+					regs[rt]  = memory[(regs[rs] + sImm) - memory_Address] << 24;
+					regs[rt] |= memory[(regs[rs] + sImm + 1) - memory_Address] << 16;
+					regs[rt] |= memory[(regs[rs] + sImm + 2) - memory_Address] << 8;
+					regs[rt] |= memory[(regs[rs] + sImm + 3) - memory_Address];
+				}
+				else
+				{
+					regs[rt]  = memory[(regs[rs] + sImm + 3) - memory_Address] << 24;
+					regs[rt] |= memory[(regs[rs] + sImm + 2) - memory_Address] << 16;
+					regs[rt] |= memory[(regs[rs] + sImm + 1) - memory_Address] << 8;
+					regs[rt] |= memory[(regs[rs] + sImm ) - memory_Address];
+				}
 				break;
 			}
 	case 40:{
@@ -814,17 +836,35 @@ void DisSim::ExecuteI( unsigned int instWord)
 	case 41:{
 				// sh
 				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;	// sign extending the immediate field
-				memory[(regs[rs] + sImm ) - memory_Address] = regs[rt]>>8;
-				memory[(regs[rs] +1 + sImm ) - memory_Address] = regs[rt]& 0x000000ff;
+				if( IsBigEndian() )
+				{
+					memory[(regs[rs] + sImm ) - memory_Address] = regs[rt]>>8;
+					memory[(regs[rs] +1 + sImm ) - memory_Address] = regs[rt]& 0x000000ff;
+				}
+				else
+				{
+					memory[(regs[rs] +1 + sImm ) - memory_Address] = regs[rt]>>8;
+					memory[(regs[rs] + sImm ) - memory_Address] = regs[rt]& 0x000000ff;
+				}
 				break;
 			}
 	case 43:{
 				// sw
 				int sImm = (imm & 0x8000) ? (0xFFFF0000 | imm): imm;	// sign extending the immediate field
-				memory[(regs[rs] + sImm) - memory_Address] = regs[rt]>>24;
-				memory[(regs[rs] + sImm)+1 - memory_Address] = (regs[rt]>>16) & 0x000000ff;
-				memory[(regs[rs] + sImm)+2 - memory_Address] = (regs[rt]>>8)  & 0x000000ff;
-				memory[(regs[rs] + sImm)+3 - memory_Address] = regs[rt] & 0x000000ff;
+				if( IsBigEndian() )
+				{
+					memory[(regs[rs] + sImm) - memory_Address] = regs[rt]>>24;
+					memory[(regs[rs] + sImm)+1 - memory_Address] = (regs[rt]>>16) & 0x000000ff;
+					memory[(regs[rs] + sImm)+2 - memory_Address] = (regs[rt]>>8)  & 0x000000ff;
+					memory[(regs[rs] + sImm)+3 - memory_Address] = regs[rt] & 0x000000ff;
+				}
+				else
+				{
+					memory[(regs[rs] + sImm)+3 - memory_Address] = regs[rt]>>24;
+					memory[(regs[rs] + sImm)+2 - memory_Address] = (regs[rt]>>16) & 0x000000ff;
+					memory[(regs[rs] + sImm)+1 - memory_Address] = (regs[rt]>>8)  & 0x000000ff;
+					memory[(regs[rs] + sImm) - memory_Address] = regs[rt] & 0x000000ff;
+				}
 				break;
 			}
 	default:{
@@ -836,7 +876,7 @@ void DisSim::ExecuteJ( unsigned int instWord)
 {
 	unsigned int opcode, address;
 	opcode	 = (instWord>>26);
-	address = (instWord & 0x03ffffff) << 2;
+	address = ((instWord & 0x03ffffff) << 2) | (current_Instr_Address & 0xf0000000);
 
 	switch( opcode )
 	{
@@ -923,4 +963,11 @@ void DisSim::DisplayColor( char*& buff )
 		strbuff="";
 	}
 	cout<< Cwhite << strbuff << endl;
+}
+bool DisSim::IsBigEndian()
+{
+	short x=1;
+	if( x & 0x00000001 )
+		return true;
+	return false;
 }
