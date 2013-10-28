@@ -76,6 +76,10 @@ DisSim::DisSim(char * in , char* in2)
 
 			if(j)
 				free(char_type1);
+			if(i)
+				free(operation_I);
+			if(r)
+				free(operation_R);
 
 			int dashes=80;	while(dashes--) cout<<"-";
 			cout<< Cgreen << "Excution: \n" << Cwhite;
@@ -151,6 +155,8 @@ void DisSim::ExecuteInst( unsigned int instWord)
 
 char* DisSim::decodeR( unsigned int instWord)
 {
+	if(R)
+		free(operation_R);
 	unsigned int rd, rs, rt, func, shamt;
 	std::ostringstream strstream;
 	std::string str;
@@ -301,13 +307,16 @@ char* DisSim::decodeR( unsigned int instWord)
 		}
 	}
 
+	r = true;
 	str = strstream.str();
-	char * operation = (char *)alloca(str.size() + 1);
-    memcpy(operation, str.c_str(), str.size() + 1);
-	return operation;
+	char * operation_R = (char *)malloc(str.size() + 1);
+    memcpy(operation_R, str.c_str(), str.size() + 1);
+	return operation_R;
 }
 char* DisSim::decodeI( unsigned int instWord)
 {
+	if(i)
+		free(operation_I);
 	unsigned int opcode, rs, rt, imm;
 
 	opcode	= (instWord>>26);
@@ -574,11 +583,11 @@ char* DisSim::decodeI( unsigned int instWord)
 	}
 
 
-	
+	i = true;
 	string temp_str = strs.str();
-	char * char_type = (char *)alloca(temp_str.size() + 1);
-	memcpy(char_type, temp_str.c_str(), temp_str.size() + 1);
-	return ( char_type );
+	char * operation_I  = (char *)malloc(temp_str.size() + 1);
+	memcpy(operation_I, temp_str.c_str(), temp_str.size() + 1);
+	return ( operation_I );
 }
 char* DisSim::decodeJ( unsigned int instWord)
 {

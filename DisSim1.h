@@ -32,7 +32,11 @@ private:
 	bool bLI;
 	unsigned int upperHalfWord;
 	bool j;
+	bool r;
+	bool i;
 	char * char_type1;
+	char * operation_R;
+	char * operation_I;
 
 	// Functions
 	void emitError( char * );			// This was on the professors skeleton.. will see what is it for
